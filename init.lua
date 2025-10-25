@@ -90,8 +90,19 @@ P.S. You can delete this when you're done too. It's your config now! :)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+-- Enable folding
+vim.o.foldenable = true
+vim.o.foldmethod = 'expr'
+vim.o.foldexpr = 'nvim_treesitter#foldexpr()'
+vim.o.foldlevel = 99 -- keeps folds open by default
+vim.o.foldlevelstart = 99
+
+-- enable undo tree and undo file
+vim.opt.undofile = true
+vim.opt.undodir = vim.fn.expand '~/.local/state/nvim/undo'
+
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -109,6 +120,14 @@ vim.opt.mouse = 'a'
 
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
+
+vim.o.tabstop = 4 -- A tab character looks like 4 spaces
+vim.o.shiftwidth = 4 -- Indentation amount when auto-indenting (e.g., with `>>`)
+vim.o.expandtab = true -- Converts tabs to spaces
+vim.o.smartindent = true -- Smart autoindenting on new lines
+
+-- removes the carage return
+vim.opt.fileformats = { 'unix', 'dos' }
 
 -- Sync clipboard between OS and Neovim.
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
@@ -144,8 +163,9 @@ vim.opt.splitbelow = true
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
 --  and `:help 'listchars'`
-vim.opt.list = true
-vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+-- vim.opt.list = true
+-- vim.opt.listchars = { tab
+-- = '» ', trail = '·', nbsp = '␣' }
 
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = 'split'
@@ -168,8 +188,21 @@ vim.opt.confirm = true
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
+-- save keybinding for gods sake
+vim.keymap.set('n', '<C-s>', ':wa<CR>', { desc = 'save current buffer' })
+
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+
+vim.api.nvim_create_autocmd('LspAttach', {
+  group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+  callback = function(ev)
+    local opts = { buffer = ev.buf }
+
+    -- Hover docs (like VSCode when you hover over a function)
+    vim.keymap.set('n', '<leader>k', vim.lsp.buf.hover, opts)
+  end,
+})
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -194,6 +227,19 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+-- NOTE: Move the current line or selected lines up and down
+vim.keymap.set('n', '<A-k>', ':m .-2<CR>==', { noremap = true, silent = true }) -- Alt + k to move up
+vim.keymap.set('n', '<A-j>', ':m .+1<CR>==', { noremap = true, silent = true }) -- Alt + j to move down
+vim.keymap.set('v', '<A-k>', ":m '<-2<CR>gv=gv", { noremap = true, silent = true }) -- Alt + k to move up in visual mode
+vim.keymap.set('v', '<A-j>', ":m '>+1<CR>gv=gv", { noremap = true, silent = true }) -- Alt + j to move down in visual mode
+
+-- NOTE Disable arrow keys in all modes
+local disable_keys = { '<Up>', '<Down>', '<Left>', '<Right>' }
+
+for _, key in ipairs(disable_keys) do
+  vim.keymap.set({ 'n', 'v', 'c' }, key, '<NOP>', { silent = true })
+end
+
 -- NOTE: Some terminals have coliding keymaps or are not able to send distinct keycodes
 -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
 -- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
@@ -211,6 +257,14 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
   callback = function()
     vim.highlight.on_yank()
+  end,
+})
+
+-- Ensure transparency applies after colorscheme load
+vim.api.nvim_create_autocmd('ColorScheme', {
+  callback = function()
+    vim.api.nvim_set_hl(0, 'Normal', { bg = 'none' })
+    vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'none' })
   end,
 })
 
@@ -274,6 +328,106 @@ require('lazy').setup({
         changedelete = { text = '~' },
       },
     },
+  },
+  {
+    'm4xshen/autoclose.nvim',
+    config = function()
+      require('autoclose').setup()
+    end,
+  },
+  {
+    'jiaoshijie/undotree',
+    dependencies = 'nvim-lua/plenary.nvim',
+    keys = {
+      {
+        '<leader>u',
+        function()
+          require('undotree').toggle()
+        end,
+        desc = 'Toggle UndoTree',
+      },
+    },
+  },
+  {
+    'rachartier/tiny-inline-diagnostic.nvim',
+    event = 'VeryLazy',
+    priority = 1000,
+    config = function()
+      require('tiny-inline-diagnostic').setup {
+        preset = 'modern',
+      }
+      vim.diagnostic.config { virtual_text = false }
+    end,
+  },
+  {
+    'ThePrimeagen/harpoon',
+    branch = 'harpoon2',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-telescope/telescope.nvim', -- for telescope integration
+    },
+    config = function()
+      local harpoon = require 'harpoon'
+
+      -- Set up harpoon with persistence and sync settings
+      harpoon:setup {
+        settings = {
+          save_on_toggle = true,
+          sync_on_ui_close = true,
+          key = function()
+            return vim.loop.cwd() -- Use current working directory for context
+          end,
+        },
+      }
+
+      -- Normal Harpoon keymaps
+      vim.keymap.set('n', '<leader>a', function()
+        harpoon:list():add()
+      end, { desc = 'Harpoon: Add file' })
+
+      vim.keymap.set('n', '<C-x>', function()
+        harpoon.ui:toggle_quick_menu(harpoon:list())
+      end, { desc = 'Harpoon: Toggle quick menu' })
+
+      -- Optional: Quick nav to first 4 files (feel free to extend this)
+      vim.keymap.set('n', '<A-1>', function()
+        harpoon:list():select(1)
+      end, { desc = 'Harpoon: Go to file 1' })
+
+      vim.keymap.set('n', '<A-2', function()
+        harpoon:list():select(2)
+      end, { desc = 'Harpoon: Go to file 2' })
+
+      vim.keymap.set('n', '<A-3>', function()
+        harpoon:list():select(3)
+      end, { desc = 'Harpoon: Go to file 3' })
+
+      vim.keymap.set('n', '<A-4>', function()
+        harpoon:list():select(4)
+      end, { desc = 'Harpoon: Go to file 4' })
+
+      -- Telescope integration
+      require('telescope').load_extension 'harpoon'
+
+      vim.keymap.set('n', '<leader>sh', function()
+        require('telescope').extensions.harpoon.marks()
+      end, { desc = 'Telescope: Harpoon marks' })
+    end,
+  },
+  {
+    'elmcgill/springboot-nvim',
+    dependencies = {
+      'neovim/nvim-lspconfig',
+      'mfussenegger/nvim-jdtls',
+    },
+    config = function()
+      local springboot_nvim = require 'springboot-nvim'
+      vim.keymap.set('n', '<leader>Jr', springboot_nvim.boot_run, { desc = 'Spring Boot Run Project' })
+      vim.keymap.set('n', '<leader>Jc', springboot_nvim.generate_class, { desc = 'Java Create Class' })
+      vim.keymap.set('n', '<leader>Ji', springboot_nvim.generate_interface, { desc = 'Java Create Interface' })
+      vim.keymap.set('n', '<leader>Je', springboot_nvim.generate_enum, { desc = 'Java Create Enum' })
+      springboot_nvim.setup {}
+    end,
   },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
@@ -425,7 +579,7 @@ require('lazy').setup({
       local builtin = require 'telescope.builtin'
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-      vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      vim.keymap.set('n', '<C-p>', builtin.find_files, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
@@ -718,7 +872,7 @@ require('lazy').setup({
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
-        ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
+        ensure_installed = { 'angularls', 'ts_ls' }, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
         automatic_installation = false,
         handlers = {
           function(server_name)
@@ -766,11 +920,14 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        typescript = { 'prettierd' },
+        html = { 'prettierd' },
+        css = { 'prettierd' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        javascript = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
@@ -914,9 +1071,42 @@ require('lazy').setup({
       vim.cmd.colorscheme 'tokyonight-night'
     end,
   },
+  {
+    'nvim-tree/nvim-tree.lua',
+    config = function()
+      require('nvim-tree').setup {
+        sort = {
+          sorter = 'case_sensitive',
+        },
+        view = {
+          width = 30,
+        },
+        renderer = {
+          group_empty = true,
+        },
+        filters = {
+          dotfiles = true,
+        },
+      }
+      vim.keymap.set('n', '<C-b>', ':NvimTreeToggle<CR>', { desc = 'toggle side tree' })
+    end,
+  },
 
   -- Highlight todo, notes, etc in comments
-  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
+  {
+    'folke/todo-comments.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    opts = {
+      signs = true,
+    },
+    highlight = {
+      multiline = true,
+      before = '',
+      keyword = 'wide_bg', -- 'fg', 'bg', 'wide', 'wide_bg'
+      after = 'fg',
+      pattern = [[.*<(KEYWORDS)\s*:]],
+    },
+  },
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
@@ -935,24 +1125,87 @@ require('lazy').setup({
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
+      require('mini.align').setup()
+
+      local starter = require 'mini.starter'
+      starter.setup {
+        evaluate_single = true,
+        header = table.concat({
+          '███╗   ██╗███████╗ ██████╗ ██╗██╗   ██╗███╗   ███╗',
+          '████╗  ██║██╔════╝██╔═══██╗██║██║   ██║████╗ ████║',
+          '██╔██╗ ██║█████╗  ██║   ██║██║██║   ██║██╔████╔██║',
+          '██║╚██╗██║██╔══╝  ██║   ██║██║╚██╗ ██╔╝██║╚██╔╝██║',
+          '██║ ╚████║███████╗╚██████╔╝██║ ╚████╔╝ ██║ ╚═╝ ██║',
+          '╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═══╝  ╚═╝     ╚═╝',
+          '',
+          '        ✨ Welcome to NEOVIM Amanuel ✨',
+          '',
+        }, '\n'),
+
+        items = {
+          starter.sections.recent_files(3, false),
+          starter.sections.builtin_actions(),
+          { name = 'Open Config', action = 'e ~/.config/nvim/init.lua', section = 'Config' },
+          { name = 'New File', action = 'enew', section = 'Config' },
+          { name = 'Quit Neovim', action = 'qa', section = 'Session' },
+        },
+
+        content_hooks = {
+          starter.gen_hook.adding_bullet('🔹 ', false),
+          starter.gen_hook.aligning('center', 'center'),
+        },
+      }
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
       local statusline = require 'mini.statusline'
       -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
+      statusline.setup {
+        use_icons = vim.g.have_nerd_font,
+        content = {
+          active = function()
+            local mode, mode_hl = MiniStatusline.section_mode { trunc_width = 120 }
+            local git = MiniStatusline.section_git { trunc_width = 75 }
+            local diagnostics = MiniStatusline.section_diagnostics { trunc_width = 75 }
+            local filename = MiniStatusline.section_filename { trunc_width = 140 }
+            local fileinfo = MiniStatusline.section_fileinfo { trunc_width = 120 }
+            local location = MiniStatusline.section_location { trunc_width = 75 }
+            local lsp = MiniStatusline.section_lsp { trunc_width = 75 }
+
+            return MiniStatusline.combine_groups {
+              { hl = mode_hl, strings = { mode } },
+              { hl = 'MiniStatuslineDevinfo', strings = { git, diagnostics, lsp } },
+              '%<',
+              { hl = 'MiniStatuslineFilename', strings = { filename } },
+              '%=',
+              { hl = 'MiniStatuslineFileinfo', strings = { fileinfo } },
+              { hl = 'MiniStatuslineLocation', strings = { location } },
+            }
+          end,
+        },
+      }
+
+      local c = require('tokyonight.colors').setup()
+
+      vim.api.nvim_set_hl(0, 'MiniStatuslineModeNormal', { fg = c.bg, bg = c.blue, bold = true })
+      vim.api.nvim_set_hl(0, 'MiniStatuslineModeInsert', { fg = c.bg, bg = c.green, bold = true })
+      vim.api.nvim_set_hl(0, 'MiniStatuslineModeVisual', { fg = c.bg, bg = c.magenta, bold = true })
+      vim.api.nvim_set_hl(0, 'MiniStatuslineModeReplace', { fg = c.bg, bg = c.red, bold = true })
+      vim.api.nvim_set_hl(0, 'MiniStatuslineModeCommand', { fg = c.bg, bg = c.yellow, bold = true })
+
+      vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', { fg = c.fg, bg = c.bg_statusline })
+      vim.api.nvim_set_hl(0, 'MiniStatuslineDevinfo', { fg = c.cyan, bg = c.bg_statusline })
+      vim.api.nvim_set_hl(0, 'MiniStatuslineFileinfo', { fg = c.orange, bg = c.bg_statusline })
+      vim.api.nvim_set_hl(0, 'MiniStatuslineLocation', { fg = c.purple, bg = c.bg_statusline })
 
       -- You can configure sections in the statusline by overriding their
       -- default behavior. For example, here we set the section for
       -- cursor location to LINE:COLUMN
       ---@diagnostic disable-next-line: duplicate-set-field
-      statusline.section_location = function()
-        return '%2l:%-2v'
-      end
-
-      -- ... and there is more!
-      --  Check out: https://github.com/echasnovski/mini.nvim
+      -- statusline.section_location = function()
+      --   return '%2l:%-2v'
+      -- end
     end,
   },
   { -- Highlight, edit, and navigate code
@@ -960,8 +1213,10 @@ require('lazy').setup({
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
+
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      fold = { enable = true },
+      ensure_installed = { 'bash', 'c', 'cpp', 'c3', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -973,12 +1228,28 @@ require('lazy').setup({
       },
       indent = { enable = true, disable = { 'ruby' } },
     },
-    -- There are additional nvim-treesitter modules that you can use to interact
-    -- with nvim-treesitter. You should go explore a few and see what interests you:
-    --
-    --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
-    --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
-    --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
+    config = function(_, opts)
+      -- Add filetype recognition for C3
+      vim.filetype.add {
+        extension = {
+          c3 = 'c3',
+          c3i = 'c3',
+          c3t = 'c3',
+        },
+      }
+
+      -- Register parser config for C3
+      local parser_config = require('nvim-treesitter.parsers').get_parser_configs()
+      parser_config.c3 =
+        {
+          install_info = {
+            url = 'https://github.com/c3lang/tree-sitter-c3',
+            files = { 'src/parser.c', 'src/scanner.c' },
+            branch = 'main',
+          },
+          filetype = 'c3',
+        }, require('nvim-treesitter.configs').setup(opts)
+    end,
   },
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
@@ -991,11 +1262,11 @@ require('lazy').setup({
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
@@ -1028,6 +1299,37 @@ require('lazy').setup({
     },
   },
 })
+
+-- Toggle terminal function
+function _G.toggle_terminal()
+  -- If terminal window exists and is open, close it
+  if terminal_window and vim.api.nvim_win_is_valid(terminal_window) then
+    vim.api.nvim_win_close(terminal_window, true)
+    terminal_window = nil
+  else
+    -- Create a horizontal split
+    vim.cmd 'split'
+    vim.cmd 'resize 10' -- Resize the split window height (adjust as needed)
+
+    -- Get the current window id (the newly created split)
+    local win = vim.api.nvim_get_current_win()
+
+    -- Create a new buffer and open it as a terminal in the new split
+    local buf = vim.api.nvim_create_buf(false, true) -- Create a terminal buffer (no file, scratch buffer)
+
+    -- Set the buffer for the split window
+    vim.api.nvim_win_set_buf(win, buf)
+
+    -- Open the terminal in the created buffer
+    vim.fn.termopen(vim.env.SHELL) -- This launches your shell inside the buffer
+
+    -- Optionally, switch to insert mode when terminal is opened
+    vim.cmd 'startinsert'
+  end
+end
+
+-- Map `Ctrl + \`` to toggle the terminal
+vim.api.nvim_set_keymap('n', '<C-m>', ':lua toggle_terminal()<CR>', { noremap = true, silent = true })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

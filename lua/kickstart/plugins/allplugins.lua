@@ -12,4 +12,5 @@ return {
   require 'kickstart.plugins.todocomments',
   require 'kickstart.plugins.tokyonight',
   require 'kickstart.plugins.nvimtree',
+  require 'kickstart.plugins.oil',
 }

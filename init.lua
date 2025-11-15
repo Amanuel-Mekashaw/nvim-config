@@ -605,11 +605,15 @@ require('lazy').setup({
 
       cmp.setup {
         formatting = {
-          format = lspkind.cmp_format {
-            mode = 'symbol_text',
-            maxwidth = 80,
-            ellipsis_char = '...',
-          },
+          fields = { 'kind', 'abbr', 'menu' },
+          format = function(entry, vim_item)
+            local kind = require('lspkind').cmp_format { mode = 'symbol_text', maxwidth = 50 }(entry, vim_item)
+            local strings = vim.split(kind.kind, '%s', { trimempty = true })
+            kind.kind = ' ' .. (strings[1] or '') .. ' '
+            kind.menu = '    (' .. (strings[2] or '') .. ')'
+
+            return kind
+          end,
         },
         window = {
           completion = cmp.config.window.bordered {
@@ -639,7 +643,7 @@ require('lazy').setup({
           ['<C-b>'] = cmp.mapping.scroll_docs(-4),
           ['<C-f>'] = cmp.mapping.scroll_docs(4),
 
-          ['<CR>'] = cmp.mapping.confirm { select = true },
+          ['<Tab>'] = cmp.mapping.confirm { select = true },
 
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
@@ -716,33 +720,56 @@ require('lazy').setup({
   },
 })
 
--- Toggle terminal function
-function _G.toggle_terminal()
-  -- If terminal window exists and is open, close it
-  if terminal_window and vim.api.nvim_win_is_valid(terminal_window) then
-    vim.api.nvim_win_close(terminal_window, true)
-    terminal_window = nil
+local state = {
+  floating = {
+    buf = -1,
+    win = -1,
+  },
+}
+
+local function create_floating_window(opts)
+  opts = opts or {}
+  local width = opts.width or math.floor(vim.o.columns * 0.8)
+  local height = opts.height or math.floor(vim.o.lines * 0.8)
+
+  -- Calculate the position to center the window
+  local col = math.floor((vim.o.columns - width) / 2)
+  local row = math.floor((vim.o.lines - height) / 2)
+
+  -- Create a buffer
+  local buf = nil
+  if vim.api.nvim_buf_is_valid(opts.buf) then
+    buf = opts.buf
   else
-    -- Create a horizontal split
-    vim.cmd 'split'
-    vim.cmd 'resize 10' -- Resize the split window height (adjust as needed)
-
-    -- Get the current window id (the newly created split)
-    local win = vim.api.nvim_get_current_win()
-
-    -- Create a new buffer and open it as a terminal in the new split
-    local buf = vim.api.nvim_create_buf(false, true) -- Create a terminal buffer (no file, scratch buffer)
-
-    -- Set the buffer for the split window
-    vim.api.nvim_win_set_buf(win, buf)
-
-    -- Open the terminal in the created buffer
-    vim.fn.termopen(vim.env.SHELL) -- This launches your shell inside the buffer
-
-    -- Optionally, switch to insert mode when terminal is opened
-    vim.cmd 'startinsert'
+    buf = vim.api.nvim_create_buf(false, true) -- No file, scratch buffer
   end
+
+  -- Define window configuration
+  local win_config = {
+    relative = 'editor',
+    width = width,
+    height = height,
+    col = col,
+    row = row,
+    style = 'minimal', -- No borders or extra UI elements
+    border = 'rounded',
+  }
+
+  -- Create the floating window
+  local win = vim.api.nvim_open_win(buf, true, win_config)
+
+  return { buf = buf, win = win }
 end
 
--- Map `Ctrl + \`` to toggle the terminal
-vim.api.nvim_set_keymap('n', '<C-m>', ':lua toggle_terminal()<CR>', { noremap = true, silent = true })
+local toggle_terminal = function()
+  if not vim.api.nvim_win_is_valid(state.floating.win) then
+    state.floating = create_floating_window { buf = state.floating.buf }
+    if vim.bo[state.floating.buf].buftype ~= 'terminal' then
+      vim.cmd.terminal()
+    end
+  else
+    vim.api.nvim_win_hide(state.floating.win)
+  end
+end
+-- Keymap
+vim.keymap.set('n', '<C-m>', toggle_terminal, { noremap = true, silent = true })

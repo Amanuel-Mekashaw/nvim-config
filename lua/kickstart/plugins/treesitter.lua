@@ -6,7 +6,7 @@ return { -- Highlight, edit, and navigate code
 
   opts = {
     fold = { enable = true },
-    ensure_installed = { 'bash', 'c', 'cpp', 'c3', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+    ensure_installed = { 'bash', 'c', 'cpp', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
     -- Autoinstall languages that are not installed
     auto_install = true,
     highlight = {

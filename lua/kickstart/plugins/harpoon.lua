@@ -14,7 +14,7 @@ return {
         save_on_toggle = true,
         sync_on_ui_close = true,
         key = function()
-          return vim.loop.cwd() -- Use current working directory for context
+          return vim.loop.cwd()
         end,
       },
     }

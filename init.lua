@@ -164,9 +164,9 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 -- Ensure transparency applies after colorscheme load
 vim.api.nvim_create_autocmd({ 'ColorScheme', 'WinEnter' }, {
   callback = function()
-     vim.api.nvim_set_hl(0, 'Normal', { bg = 'none' })
-     vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'none' })
-   end,
+    vim.api.nvim_set_hl(0, 'Normal', { bg = 'none' })
+    vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'none' })
+  end,
 })
 
 vim.api.nvim_create_autocmd('LspAttach', {
@@ -468,7 +468,7 @@ require('lazy').setup({
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
-        ensure_installed = { 'angularls', 'ts_ls' }, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
+        ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
         automatic_installation = false,
         handlers = {
           function(server_name)

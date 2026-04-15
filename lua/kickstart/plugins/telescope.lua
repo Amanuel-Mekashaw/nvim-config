@@ -24,6 +24,11 @@ return { -- Fuzzy Finder (files, lsp, etc)
   },
   config = function()
     require('telescope').setup {
+      defaults = {
+        preview = {
+          treesitter = false,
+        },
+      },
       -- defaults = {
       --   mappings = {
       --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },

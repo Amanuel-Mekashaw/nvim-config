@@ -2,12 +2,10 @@ return {
   {
     'blazkowolf/gruber-darker.nvim',
     opts = {
-      bold = false,
+      bold = true,
       italic = {
         strings = false,
       },
     },
-
-    -- vim.cmd.colorscheme 'gruber-darker',
   },
 }

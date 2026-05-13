@@ -48,7 +48,7 @@ return {
     -- Telescope integration
     require('telescope').load_extension 'harpoon'
 
-    vim.keymap.set('n', '<leader>sh', function()
+    vim.keymap.set('n', '<leader>x', function()
       require('telescope').extensions.harpoon.marks()
     end, { desc = 'Telescope: Harpoon marks' })
   end,

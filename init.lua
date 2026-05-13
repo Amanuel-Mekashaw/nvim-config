@@ -133,6 +133,10 @@ vim.keymap.set('n', '<A-j>', ':m .+1<CR>==', { noremap = true, silent = true }) 
 vim.keymap.set('v', '<A-k>', ":m '<-2<CR>gv=gv", { noremap = true, silent = true }) -- Alt + k to move up in visual mode
 vim.keymap.set('v', '<A-j>', ":m '>+1<CR>gv=gv", { noremap = true, silent = true }) -- Alt + j to move down in visual mode
 
+-- NOTE: Indent using > and <
+vim.keymap.set({ 'n', 'v', 'x' }, '>', '>gv', { desc = 'Indent' })
+vim.keymap.set({ 'n', 'v', 'x' }, '<', '<gv', { desc = 'Unindent' })
+
 -- NOTE Disable arrow keys in all modes
 local disable_keys = { '<Up>', '<Down>', '<Left>', '<Right>' }
 

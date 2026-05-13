@@ -1,6 +1,6 @@
 return {
   require 'kickstart.plugins.mini',
-  require 'kickstart.plugins.treesitter',
+  -- require 'kickstart.plugins.treesitter',
   require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
   require 'kickstart.plugins.lint',
@@ -14,4 +14,5 @@ return {
   require 'kickstart.plugins.nvimtree',
   require 'kickstart.plugins.oil',
   require 'kickstart.plugins.smear_cursor',
+  require 'kickstart.plugins.gruber-darker',
 }

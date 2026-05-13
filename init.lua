@@ -1,4 +1,3 @@
-vim.g.python3_host_prog = '~/.venvs/nvim/bin/python3'
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
@@ -114,10 +113,10 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 -- TIP: Disable arrow keys in normal mode
--- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
--- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
--- vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
--- vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
+vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
+vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
+vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
+vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
@@ -142,10 +141,10 @@ for _, key in ipairs(disable_keys) do
 end
 
 -- NOTE: Some terminals have coliding keymaps or are not able to send distinct keycodes
--- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
--- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
--- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
--- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
+vim.keymap.set('n', '<C-S-h>', '<C-w>H', { desc = 'Move window to the left' })
+vim.keymap.set('n', '<C-S-l>', '<C-w>L', { desc = 'Move window to the right' })
+vim.keymap.set('n', '<C-S-j>', '<C-w>J', { desc = 'Move window to the lower' })
+vim.keymap.set('n', '<C-S-k>', '<C-w>K', { desc = 'Move window to the upper' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -168,6 +167,52 @@ vim.api.nvim_create_autocmd({ 'ColorScheme', 'WinEnter' }, {
     vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'none' })
   end,
 })
+
+-- Automatically adapt to current colorscheme
+vim.api.nvim_create_autocmd('ColorScheme', {
+  callback = function()
+    -- Main statusline sections
+    vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', {
+      link = 'StatusLine',
+    })
+
+    vim.api.nvim_set_hl(0, 'MiniStatuslineDevinfo', {
+      link = 'StatusLine',
+    })
+
+    vim.api.nvim_set_hl(0, 'MiniStatuslineFileinfo', {
+      link = 'StatusLine',
+    })
+
+    vim.api.nvim_set_hl(0, 'MiniStatuslineLocation', {
+      link = 'StatusLine',
+    })
+
+    -- Mode colors
+    vim.api.nvim_set_hl(0, 'MiniStatuslineModeNormal', {
+      link = 'Function',
+    })
+
+    vim.api.nvim_set_hl(0, 'MiniStatuslineModeInsert', {
+      link = 'String',
+    })
+
+    vim.api.nvim_set_hl(0, 'MiniStatuslineModeVisual', {
+      link = 'Type',
+    })
+
+    vim.api.nvim_set_hl(0, 'MiniStatuslineModeReplace', {
+      link = 'Error',
+    })
+
+    vim.api.nvim_set_hl(0, 'MiniStatuslineModeCommand', {
+      link = 'Keyword',
+    })
+  end,
+})
+
+-- Apply immediately for current theme
+vim.cmd 'doautocmd ColorScheme'
 
 vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('UserLspConfig', {}),

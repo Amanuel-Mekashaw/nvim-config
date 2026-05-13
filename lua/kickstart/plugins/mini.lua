@@ -20,10 +20,12 @@ return { -- Collection of various small independent plugins/modules
     -- Simple and easy statusline.
     --  You could remove this setup call if you don't like it,
     --  and try some other statusline plugin
+
     local statusline = require 'mini.statusline'
-    -- set use_icons to true if you have a Nerd Font
+
     statusline.setup {
       use_icons = vim.g.have_nerd_font,
+
       content = {
         active = function()
           local mode, mode_hl = MiniStatusline.section_mode { trunc_width = 120 }
@@ -46,26 +48,5 @@ return { -- Collection of various small independent plugins/modules
         end,
       },
     }
-
-    local c = require('tokyonight.colors').setup()
-
-    vim.api.nvim_set_hl(0, 'MiniStatuslineModeNormal', { fg = c.bg, bg = c.blue, bold = true })
-    vim.api.nvim_set_hl(0, 'MiniStatuslineModeInsert', { fg = c.bg, bg = c.green, bold = true })
-    vim.api.nvim_set_hl(0, 'MiniStatuslineModeVisual', { fg = c.bg, bg = c.magenta, bold = true })
-    vim.api.nvim_set_hl(0, 'MiniStatuslineModeReplace', { fg = c.bg, bg = c.red, bold = true })
-    vim.api.nvim_set_hl(0, 'MiniStatuslineModeCommand', { fg = c.bg, bg = c.yellow, bold = true })
-
-    vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', { fg = c.fg, bg = c.bg_statusline })
-    vim.api.nvim_set_hl(0, 'MiniStatuslineDevinfo', { fg = c.cyan, bg = c.bg_statusline })
-    vim.api.nvim_set_hl(0, 'MiniStatuslineFileinfo', { fg = c.orange, bg = c.bg_statusline })
-    vim.api.nvim_set_hl(0, 'MiniStatuslineLocation', { fg = c.purple, bg = c.bg_statusline })
-
-    -- You can configure sections in the statusline by overriding their
-    -- default behavior. For example, here we set the section for
-    -- cursor location to LINE:COLUMN
-    ---@diagnostic disable-next-line: duplicate-set-field
-    -- statusline.section_location = function()
-    --   return '%2l:%-2v'
-    -- end
   end,
 }

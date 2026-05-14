@@ -14,4 +14,5 @@ return {
   require 'kickstart.plugins.nvimtree',
   require 'kickstart.plugins.oil',
   require 'kickstart.plugins.gruber-darker',
+  require 'kickstart.plugins.colorizer',
 }

@@ -15,4 +15,5 @@ return {
   require 'kickstart.plugins.oil',
   require 'kickstart.plugins.gruber-darker',
   require 'kickstart.plugins.colorizer',
+  require 'kickstart.plugins.multiple-cursor',
 }

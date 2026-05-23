@@ -33,7 +33,7 @@ return {
       harpoon:list():select(1)
     end, { desc = 'Harpoon: Go to file 1' })
 
-    vim.keymap.set('n', '<A-2', function()
+    vim.keymap.set('n', '<A-2>', function()
       harpoon:list():select(2)
     end, { desc = 'Harpoon: Go to file 2' })
 

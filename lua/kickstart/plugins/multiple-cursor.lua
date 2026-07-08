@@ -3,7 +3,6 @@ return {
   branch = '1.0',
   config = function()
     local mc = require 'multicursor-nvim'
-
     mc.setup()
 
     local set = vim.keymap.set
@@ -18,7 +17,7 @@ return {
     end, { desc = 'Add cursor above' })
 
     -- Add next occurrence
-    set('n', '<C-d>', function()
+    set('n', '<C-A-d>', function()
       mc.matchAddCursor(1)
     end, { desc = 'Add next occurrence' })
 

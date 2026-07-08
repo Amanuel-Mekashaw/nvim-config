@@ -1,6 +1,6 @@
 return { -- Fuzzy Finder (files, lsp, etc)
   'nvim-telescope/telescope.nvim',
-  version = "*",
+  version = '*',
   event = 'VimEnter',
   branch = '0.1.x',
   dependencies = {
@@ -40,7 +40,7 @@ return { -- Fuzzy Finder (files, lsp, etc)
     }
 
     -- Enable Telescope extensions if they are installed
-    pcall(require('telescope').load_extension, 'fzf')
+    -- pcall(require('telescope').load_extension, 'fzf')
     pcall(require('telescope').load_extension, 'ui-select')
 
     -- See `:help telescope.builtin`

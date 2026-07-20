@@ -15,6 +15,12 @@ return {
       filters = {
         dotfiles = true,
       },
+      git = {
+        enable = false,
+      },
+      diagnostics = {
+        enable = false,
+      },
     }
     vim.keymap.set('n', '<C-b>', ':NvimTreeToggle<CR>', { desc = 'toggle side tree' })
   end,

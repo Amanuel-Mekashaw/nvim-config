@@ -16,4 +16,5 @@ return {
   require 'kickstart.plugins.gruber-darker',
   require 'kickstart.plugins.colorizer',
   require 'kickstart.plugins.multiple-cursor',
+  -- require 'kickstart.plugins.nvim-jdtls',
 }

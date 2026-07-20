@@ -11,9 +11,9 @@ vim.o.foldlevelstart = 99
 -- enable undo tree and undo file
 vim.opt.undofile = true
 vim.opt.undodir = vim.fn.expand '~/.local/state/nvim/undo'
+vim.g.have_nerd_font = true
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -99,7 +99,7 @@ vim.opt.confirm = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- save keybinding for gods sake
-vim.keymap.set('n', '<C-s>', ':wa<CR>', { desc = 'save all buffer' })
+vim.keymap.set('n', '<C-s>', '<cmd>:wa<cr>', { desc = 'save all buffer' })
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
@@ -128,10 +128,10 @@ vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower win
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 -- NOTE: Move the current line or selected lines up and down
-vim.keymap.set('n', '<A-k>', ':m .-2<CR>==', { noremap = true, silent = true }) -- Alt + k to move up
-vim.keymap.set('n', '<A-j>', ':m .+1<CR>==', { noremap = true, silent = true }) -- Alt + j to move down
-vim.keymap.set('v', '<A-k>', ":m '<-2<CR>gv=gv", { noremap = true, silent = true }) -- Alt + k to move up in visual mode
-vim.keymap.set('v', '<A-j>', ":m '>+1<CR>gv=gv", { noremap = true, silent = true }) -- Alt + j to move down in visual mode
+vim.keymap.set('n', '<A-k>', ':m .-2<cr>==', { noremap = true, silent = true }) -- Alt + k to move up
+vim.keymap.set('n', '<A-j>', ':m .+1<cr>==', { noremap = true, silent = true }) -- Alt + j to move down
+vim.keymap.set('v', '<A-k>', ":m '<-2<cr>gv=gv", { noremap = true, silent = true }) -- Alt + k to move up in visual mode
+vim.keymap.set('v', '<A-j>', ":m '>+1<cr>gv=gv", { noremap = true, silent = true }) -- Alt + j to move down in visual mode
 
 -- NOTE: Indent using > and <
 vim.keymap.set({ 'n', 'v', 'x' }, '>', '>gv', { desc = 'Indent' })

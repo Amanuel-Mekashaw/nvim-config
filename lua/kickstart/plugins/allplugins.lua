@@ -1,4 +1,6 @@
 return {
+  require 'kickstart.plugins.telescope',
+  require 'kickstart.plugins.lazygit',
   require 'kickstart.plugins.mini',
   require 'kickstart.plugins.treesitter',
   require 'kickstart.plugins.debug',
@@ -16,5 +18,7 @@ return {
   require 'kickstart.plugins.gruber-darker',
   require 'kickstart.plugins.colorizer',
   require 'kickstart.plugins.multiple-cursor',
-  -- require 'kickstart.plugins.nvim-jdtls',
+  require 'kickstart.plugins.nvim-jdtls',
+  require 'kickstart.plugins.springboot',
+  require 'kickstart.plugins.antigravity',
 }

@@ -26,17 +26,17 @@ local M = {
   build = ':TSUpdate',
   config = function()
     local treesitter = require 'nvim-treesitter'
-    treesitter.install {
-      'c',
-      'cpp',
-      'glsl',
-      'lua',
-      'meson',
-      'python',
-      'vim',
-      'vimdoc',
-      'query',
-    }
+    -- treesitter.install {
+    --   'c',
+    --   'cpp',
+    --   'glsl',
+    --   'lua',
+    --   'meson',
+    --   'python',
+    --   'vim',
+    --   'vimdoc',
+    --   'query',
+    -- }
   end,
 }
 

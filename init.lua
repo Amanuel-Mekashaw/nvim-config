@@ -1,6 +1,32 @@
+-- this is for a neovide application scale maybe different for my machine(this is for work machine)
+
+if vim.g.neovide then
+  vim.g.neovide_scale_factor = 1.0
+  vim.o.guifont = 'JetBrainsMono Nerd Font:h10'
+  vim.g.neovide_corner_preference = 'round'
+  vim.g.neovide_floating_corner_radius = 0.0
+
+  -- window blur
+  vim.g.neovide_window_blurred = false
+  vim.g.neovide_floating_blur_amount_x = 5.0
+  vim.g.neovide_floating_blur_amount_y = 5.0
+
+  -- floating window shadow
+  vim.g.neovide_floating_shadow = true
+  vim.g.neovide_floating_z_height = 10
+  vim.g.neovide_light_angle_degrees = 45
+  vim.g.neovide_light_radius = 5
+
+  -- Transparency
+  vim.g.neovide_normal_opacity = 0.9
+
+  vim.g.neovide_highlight_matching_pair = true
+  vim.g.neovide_cursor_antialiasing = true
+  -- vim.g.neovide_cursor_vfx_mode = 'sonicboom'
+end
+
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
-
 -- Enable folding
 vim.o.foldenable = true
 vim.o.foldmethod = 'expr'
@@ -150,6 +176,55 @@ vim.keymap.set('n', '<C-S-l>', '<C-w>L', { desc = 'Move window to the right' })
 vim.keymap.set('n', '<C-S-j>', '<C-w>J', { desc = 'Move window to the lower' })
 vim.keymap.set('n', '<C-S-k>', '<C-w>K', { desc = 'Move window to the upper' })
 
+-- Floating terminal toggle (<C-m>)
+local state = {
+  floating = {
+    buf = -1,
+    win = -1,
+  },
+}
+
+local function create_floating_window(opts)
+  opts = opts or {}
+  local width = opts.width or math.floor(vim.o.columns * 0.8)
+  local height = opts.height or math.floor(vim.o.lines * 0.8)
+
+  local col = math.floor((vim.o.columns - width) / 2)
+  local row = math.floor((vim.o.lines - height) / 2)
+
+  local buf = nil
+  if vim.api.nvim_buf_is_valid(opts.buf) then
+    buf = opts.buf
+  else
+    buf = vim.api.nvim_create_buf(false, true)
+  end
+
+  local win_config = {
+    relative = 'editor',
+    width = width,
+    height = height,
+    col = col,
+    row = row,
+    style = 'minimal',
+    border = 'rounded',
+  }
+
+  local win = vim.api.nvim_open_win(buf, true, win_config)
+  return { buf = buf, win = win }
+end
+
+local toggle_terminal = function()
+  if not vim.api.nvim_win_is_valid(state.floating.win) then
+    state.floating = create_floating_window { buf = state.floating.buf }
+    if vim.bo[state.floating.buf].buftype ~= 'terminal' then
+      vim.cmd.terminal()
+    end
+  else
+    vim.api.nvim_win_hide(state.floating.win)
+  end
+end
+vim.keymap.set('n', '<C-m>', toggle_terminal, { noremap = true, silent = true, desc = 'Toggle floating terminal' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -231,22 +306,6 @@ vim.api.nvim_create_autocmd('ColorScheme', {
 -- Apply immediately for current theme
 vim.cmd 'doautocmd ColorScheme'
 
-vim.api.nvim_create_autocmd('LspAttach', {
-  group = vim.api.nvim_create_augroup('UserLspConfig', {}),
-  callback = function(ev)
-    local opts = { buffer = ev.buf }
-
-    -- Hover docs (like VSCode when you hover over a function)
-    vim.keymap.set('n', '<leader>k', function()
-      vim.lsp.buf.hover {
-        border = 'single',
-        max_height = 25,
-        max_width = 90,
-      }
-    end, opts)
-  end,
-})
-
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -261,24 +320,6 @@ vim.opt.rtp:prepend(lazypath)
 
 require('lazy').setup({
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
-
-  {
-    'kdheepak/lazygit.nvim',
-    cmd = {
-      'LazyGit',
-      'LazyGitConfig',
-      'LazyGitCurrentFile',
-      'LazyGitFilter',
-      'LazyGitFilterCurrentFile',
-    },
-
-    dependencies = {
-      'nvim-lua/plenary.nvim',
-    },
-    keys = {
-      { '<leader>lg', '<cmd>LazyGit<cr>', desc = 'open lazygit' },
-    },
-  },
 
   { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
@@ -345,7 +386,6 @@ require('lazy').setup({
       },
     },
   },
-  require 'kickstart.plugins.telescope',
   -- LSP Plugins
   {
     -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
@@ -370,7 +410,7 @@ require('lazy').setup({
         'williamboman/mason.nvim',
         opts = {
           automatic_enable = {
-            exlude = {
+            exclude = {
               'jdtls',
             },
           },
@@ -408,6 +448,13 @@ require('lazy').setup({
           map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
           map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction', { 'n', 'x' })
           map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+          map('<leader>k', function()
+            vim.lsp.buf.hover {
+              border = 'single',
+              max_height = 25,
+              max_width = 90,
+            }
+          end, 'Hover Documentation')
 
           -- This function resolves a difference between neovim nightly (version 0.11) and stable (version 0.10)
           ---@param client vim.lsp.Client
@@ -500,7 +547,28 @@ require('lazy').setup({
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
       local servers = {
-        clangd = {},
+        clangd = {
+          cmd = (function()
+            local cmd = {
+              'clangd',
+              '--background-index',
+              '--clang-tidy',
+              '--header-insertion=iwyu',
+              '--completion-style=detailed',
+              '--function-arg-placeholders',
+              '--fallback-style=llvm',
+            }
+            if vim.fn.has 'win32' == 1 then
+              table.insert(cmd, '--query-driver=C:/Users/AmanuelMek/scoop/apps/gcc/current/bin/*,C:/Users/AmanuelMek/scoop/apps/llvm/current/bin/*')
+            end
+            return cmd
+          end)(),
+          init_options = {
+            usePlaceholders = true,
+            completeUnimported = true,
+            clangdFileStatus = true,
+          },
+        },
         gopls = {},
         ts_ls = {},
         pyright = {},
@@ -523,20 +591,25 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'jdtls',
+        'google-java-format',
+        'vscode-spring-boot-tools',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
-        ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
+        ensure_installed = { 'clangd', 'gopls', 'ts_ls', 'pyright', 'lua_ls' },
         automatic_installation = false,
-        handlers = {
-          function(server_name)
-            local server = servers[server_name] or {}
-            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            require('lspconfig')[server_name].setup(server)
-          end,
-        },
       }
+
+      for server_name, server in pairs(servers) do
+        server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+        vim.lsp.config(server_name, server)
+        vim.lsp.enable(server_name)
+      end
+
+      -- Explicitly disable default jdtls to avoid conflicting with nvim-jdtls
+      vim.lsp.enable('jdtls', false)
     end,
   },
 
@@ -572,6 +645,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        java = { 'google-java-format' },
         typescript = { 'prettierd' },
         html = { 'prettierd' },
         css = { 'prettierd' },
@@ -746,57 +820,3 @@ require('lazy').setup({
     },
   },
 })
-
-local state = {
-  floating = {
-    buf = -1,
-    win = -1,
-  },
-}
-
-local function create_floating_window(opts)
-  opts = opts or {}
-  local width = opts.width or math.floor(vim.o.columns * 0.8)
-  local height = opts.height or math.floor(vim.o.lines * 0.8)
-
-  -- Calculate the position to center the window
-  local col = math.floor((vim.o.columns - width) / 2)
-  local row = math.floor((vim.o.lines - height) / 2)
-
-  -- Create a buffer
-  local buf = nil
-  if vim.api.nvim_buf_is_valid(opts.buf) then
-    buf = opts.buf
-  else
-    buf = vim.api.nvim_create_buf(false, true) -- No file, scratch buffer
-  end
-
-  -- Define window configuration
-  local win_config = {
-    relative = 'editor',
-    width = width,
-    height = height,
-    col = col,
-    row = row,
-    style = 'minimal', -- No borders or extra UI elements
-    border = 'rounded',
-  }
-
-  -- Create the floating window
-  local win = vim.api.nvim_open_win(buf, true, win_config)
-
-  return { buf = buf, win = win }
-end
-
-local toggle_terminal = function()
-  if not vim.api.nvim_win_is_valid(state.floating.win) then
-    state.floating = create_floating_window { buf = state.floating.buf }
-    if vim.bo[state.floating.buf].buftype ~= 'terminal' then
-      vim.cmd.terminal()
-    end
-  else
-    vim.api.nvim_win_hide(state.floating.win)
-  end
-end
--- Keymap
-vim.keymap.set('n', '<C-m>', toggle_terminal, { noremap = true, silent = true })

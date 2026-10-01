@@ -176,6 +176,16 @@ vim.keymap.set('n', '<C-S-l>', '<C-w>L', { desc = 'Move window to the right' })
 vim.keymap.set('n', '<C-S-j>', '<C-w>J', { desc = 'Move window to the lower' })
 vim.keymap.set('n', '<C-S-k>', '<C-w>K', { desc = 'Move window to the upper' })
 
+local terminal_diagnostics = require 'utils.terminal_diagnostics'
+
+vim.keymap.set('t', 'gD', function()
+  vim.cmd 'stopinsert'
+  terminal_diagnostics.jump_to_current_error()
+end, {
+  buffer = bufnr,
+  desc = 'Jump to compiler error',
+})
+
 -- Floating terminal toggle (<C-m>)
 local state = {
   floating = {

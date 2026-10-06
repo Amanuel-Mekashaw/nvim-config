@@ -147,6 +147,11 @@ vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
 --
+
+-- Split windows
+vim.keymap.set('n', '<A-/>', ':split<cr>', { desc = 'Split Horizonatlly' })
+vim.keymap.set('n', '<A-|>', ':vs<cr>', { desc = 'Split Vertically' })
+
 --  See `:help wincmd` for a list of all window commands
 vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })

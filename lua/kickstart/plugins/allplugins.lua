@@ -21,4 +21,5 @@ return {
   require 'kickstart.plugins.nvim-jdtls',
   require 'kickstart.plugins.springboot',
   require 'kickstart.plugins.antigravity',
+  require 'kickstart.plugins.neogit',
 }
